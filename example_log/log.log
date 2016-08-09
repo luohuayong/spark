@@ -1,10 +1,9 @@
-2016-07-27 04:09:42,184 example.log  INFO     this is a info file
-2016-07-27 04:09:42,184 example.log  ERROR    this is a error file
-2016-07-29 02:29:28,607 example_log  INFO     this is a info log
-2016-07-29 02:29:28,608 example_log  ERROR    this is a error log
-2016-07-29 02:32:30,864 example_log  INFO     this is a info log
-2016-07-29 02:32:30,864 example_log  ERROR    this is a error log
-2016-07-29 02:34:14,747 example_log  INFO     this is a info log
-2016-07-29 02:34:14,747 example_log  ERROR    this is a error log
-2016-07-29 02:52:23,388 example_log  INFO     this is a info log
-2016-07-29 02:52:23,389 example_log  ERROR    this is a error log
+
+2016-08-03 22:55:54,821 - __main__ - INFO - this is a info log
+2016-08-03 22:55:54,822 - __main__ - ERROR - this is a error log
+2016-08-03 22:57:05,022 - __main__ - INFO - this is a info log
+2016-08-03 22:57:05,022 - __main__ - ERROR - this is a error log
+2016-08-03 22:57:30,571 - __main__ - INFO - this is a info log
+2016-08-03 22:57:30,573 - __main__ - ERROR - this is a error log
+2016-08-03 22:59:43,786 - __main__ - INFO - this is a info log
+2016-08-03 22:59:43,786 - __main__ - ERROR - this is a error log
