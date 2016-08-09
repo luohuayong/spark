@@ -6,7 +6,7 @@ sc = SparkContext(appName="engine")
 import logging
 import logging.config
 import json
-with open("log.json",'rt') as f:
+with open("/mnt/src/log.json",'rt') as f:
     config = json.load(f)
 logging.config.dictConfig(config)
 log = logging.getLogger(__name__)
