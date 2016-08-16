@@ -7,15 +7,15 @@
 #log.info("this is a info log")
 #log.error("this is a error log")
 
-import json
+import pudb;
+pu.db
 import logging
-import logging.config
-log_json_path = "log.json"
-with open(log_json_path,'rt') as f:
-    config = json.load(f)
-logging.config.dictConfig(config)
-#logging.config.fileConfig("log.conf")
-log = logging.getLogger(__name__)
-log.debug("this is a debug log")
-log.info("this is a info log")
-log.error("this is a error log")
+#logging.basicConfig(filename='logger.log',level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+plog = logging.getLogger(__name__)
+
+plog.debug("this is a debug plog")
+plog.info("this is a info plog")
+plog.error("this is a error plog")
+
+

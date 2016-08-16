@@ -6,7 +6,7 @@ sc = SparkContext(appName="engine")
 import logging
 import logging.config
 import json
-with open("/mnt/src/log.json",'rt') as f:
+with open("log.json",'rt') as f:
     config = json.load(f)
 logging.config.dictConfig(config)
 log = logging.getLogger(__name__)
@@ -31,13 +31,13 @@ db_pwd = cf.get("database","pwd")
 conn = psycopg2.connect(host=db_host,dbname=db_dbname,user=db_user,password=db_pwd)
 cur = conn.cursor()
 
-#log.info("load data_product ...")
-#sql_product = "select pid,status from data_product where status=1"
-#cur.execute(sql_product)
-#rows = cur.fetchall()
-#dict_data_product = {}
-#for row in rows:
-#    dict_data_product[str(row[0])]=1
+log.info("load data_product ...")
+sql_product = "select pid,status from data_product where status=1"
+cur.execute(sql_product)
+rows = cur.fetchall()
+dict_data_product = {}
+for row in rows:
+    dict_data_product[str(row[0])]=1
 
 
 log.info("make rdd_rating...")
@@ -135,7 +135,7 @@ cur.execute(sql_del_product_similarity)
 conn.commit()
 
 log.info("product_similarity insert start...")
-rdd_feature = model.productFeatures()#.filter(lambda x:dict_data_product.has_key[str(x[0])])
+rdd_feature = model.productFeatures().filter(lambda x:dict_data_product.has_key[str(x[0])])
 #log.info("rdd_feature.take(1)=%s".rdd_feature.take(1))
 rdd_feature.cache()
 list_feature = rdd_feature.collect()
@@ -172,20 +172,21 @@ for i in range(len(list_feature)):
         conn.commit()
 log.info("product_similarity(%s products and %s rows) insert complete!" % (len(list_feature),rows_num))
 
-#log.info("redis write start ...")
-#redis_prefix = "rec.user_recommend.uid"
-#for i in range(len(list_recommend)):
-#    row = list_recommend[i]
-#    json_value = json.dumps(row[1])
-#    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
-#log.info("redis rec.user_recommend(%s users) insert complete!" % len(list_recommend))
+log.info("redis write start ...")
+redis_prefix = "rec.user_recommend.uid"
+for i in range(len(list_recommend)):
+    row = list_recommend[i]
+    json_value = json.dumps(row[1])
+    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
+log.info("redis rec.user_recommend(%s users) insert complete!" % len(list_recommend))
 
-#redis_prefix = "rec.product_similarity.pid"
-#for i in range(len(list_product_similarity)):
-#    row = list_product_similarity[i]
-#    json_value = json.dumps(row[1])
-#    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
-#log.info("redis rec.product_similarity(%s products) insert complete!" % len(list_product_similarity))
+redis_prefix = "rec.product_similarity.pid"
+for i in range(len(list_product_similarity)):
+    row = list_product_similarity[i]
+    json_value = json.dumps(row[1])
+    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
+log.info("redis rec.product_similarity(%s products) insert complete!" % len(list_product_similarity))
+log.info("write redis complete")
 
 cur.close()
 conn.close()
