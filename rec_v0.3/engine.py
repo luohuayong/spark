@@ -72,6 +72,34 @@ rdd_rating = rdd_rating.union(rdd_temp)
 log.info("rdd_temp_favorites.count() = %s" % rdd_temp.count())
 log.info("rdd_rating.count() = %s" % rdd_rating.count())
 #log.info("rdd_rating complete!")
+sql_product = "select pid from data_product where status=1"
+cur.execute(sql_product)
+list_product = cur.fetchall()
+rdd_rating = rdd_rating.filter(lambda x:(x[1],) in list_product)
+log.info("filter rdd_rating.count() = %s" % rdd_rating.count())
+rdd_hot = rdd_rating.map(lambda x:(x[1],x[2]))\
+    .reduceByKey(lambda x,y:x+y)\
+    .sortBy(lambda x:x[1],False)
+list_hot = rdd_hot.take(30)
+
+log.info("delete product_hot ...")
+sql_del_hot = "delete from product_hot"
+cur.execute(sql_del_hot)
+conn.commit()
+
+sql_values = ""
+log.info("product_hot insert ...")
+for i in range(len(list_hot)):
+    sql_values += "(%s,%s)," % list_hot[i]
+sql_insert = "insert into product_hot (pid,hot) values %s" \
+    % sql_values.rstrip(',')
+cur.execute(sql_insert)
+conn.commit()
+
+redis_prefix = "rec.product_hot"
+json_value = json.dumps(list_hot)
+rd.set(redis_prefix,json_value)
+exit()
 
 log.info("delete user_rating ...")
 sql_del_rating = "delete from user_rating"
@@ -90,6 +118,7 @@ for i in range(len(list_rating)):
         cur.execute(sql_insert)
         conn.commit()
 log.info("user_rating(%s rows) insert complete!" % len(list_rating))
+
 
 log.info("train model start...")
 ratings = rdd_rating.map(lambda x:Rating(int(x[0]),int(x[1]),float(x[2])))
@@ -172,21 +201,26 @@ for i in range(len(list_feature)):
         conn.commit()
 log.info("product_similarity(%s products and %s rows) insert complete!" % (len(list_feature),rows_num))
 
-#log.info("redis write start ...")
-#redis_prefix = "rec.user_recommend.uid"
-#for i in range(len(list_recommend)):
-#    row = list_recommend[i]
-#    json_value = json.dumps(row[1])
-#    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
-#log.info("redis rec.user_recommend(%s users) insert complete!" % len(list_recommend))
+log.info("redis write start ...")
+redis_prefix = "rec.user_recommend.uid"
+for i in range(len(list_recommend)):
+    row = list_recommend[i]
+    json_value = json.dumps(row[1])
+    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
+log.info("redis rec.user_recommend(%s users) insert complete!" % len(list_recommend))
 
-#redis_prefix = "rec.product_similarity.pid"
-#for i in range(len(list_product_similarity)):
-#    row = list_product_similarity[i]
-#    json_value = json.dumps(row[1])
-#    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
-#log.info("redis rec.product_similarity(%s products) insert complete!" % len(list_product_similarity))
+redis_prefix = "rec.product_similarity.pid"
+for i in range(len(list_product_similarity)):
+    row = list_product_similarity[i]
+    json_value = json.dumps(row[1])
+    rd.set("%s:%s" % (redis_prefix,row[0]),json_value)
+log.info("redis rec.product_similarity(%s products) insert complete!" % len(list_product_similarity))
 
+redis_prefix = "rec.product_hot"
+json_value = json.dumps(list_hot)
+rd.set(redis_prefix,json_value)
+
+#log.info("operate completed!")
 cur.close()
 conn.close()
 sc.stop()
